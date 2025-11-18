@@ -1,41 +1,21 @@
 package com.ecommerce;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
- * Represents a customer, holding their ID, name, and shopping cart.
+ * Represents a customer with a cart that tracks item quantities.
  * @author Malith Dissanayake
  */
 public class Customer {
-    private final String customerID;
-    private final String name;
-    private final List<Product> shoppingCart;
+    private String name;
+    private final Map<Product, Integer> cart = new LinkedHashMap<>();
 
-    /**
-     * Creates a new customer with an empty cart.
-     * @param customerID The customer's unique ID.
-     * @param name The customer's name.
-     */
-    public Customer(String customerID, String name) {
-        this.customerID = customerID;
-        this.name = name;
-        this.shoppingCart = new ArrayList<>();
-    }
-
-    // Getters for customer details.
-    public String getCustomerID() { return customerID; }
+    public Customer(String name) { this.name = name; }
     public String getName() { return name; }
-    
-    /** Adds a product to the cart. */
-    public void addToCart(Product product) { shoppingCart.add(product); }
-
-    /** Removes a specific product from the cart. */
-    public void removeFromCart(Product product) { shoppingCart.remove(product); }
-    
-    /** Returns a safe copy of the cart's contents. */
-    public List<Product> getShoppingCart() { return new ArrayList<>(shoppingCart); }
-
-    /** Empties the cart, usually after an order is placed. */
-    public void clearCart() { shoppingCart.clear(); }
+    public void setName(String name) { this.name = name; }
+    public Map<Product, Integer> getCart() { return cart; }
+    public void addToCart(Product p) { cart.put(p, cart.getOrDefault(p, 0) + 1); }
+    public void removeFromCart(Product p) { cart.remove(p); }
+    public void clearCart() { cart.clear(); }
 }

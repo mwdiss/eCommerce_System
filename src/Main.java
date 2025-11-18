@@ -3,169 +3,252 @@ import com.ecommerce.Product;
 import com.ecommerce.orders.Order;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
- * A simple Swing GUI for our E-commerce system.
- * It lets you browse products, add/remove from cart, and place an order.
+ * A feature-rich, animated Swing GUI for the E-commerce system.
  * @author Malith Dissanayake
  */
 public class Main {
+    private static Customer customer = new Customer("Guest");
+    private static ProductTableModel prodTblModel;
+    private static CartTableModel cartTblModel;
+    private static JPanel cartPanel;
+    private static JLabel totalLbl;
+    private static JButton cartBtn;
 
-    // --- App-wide data and UI components ---
-    private static final Customer customer = new Customer("CUST001", "Malith Dissanayake");
-    private static final DefaultListModel<Product> productListModel = new DefaultListModel<>();
-    private static final DefaultListModel<Product> cartListModel = new DefaultListModel<>();
-    private static JList<Product> productJList;
-    private static JList<Product> cartJList;
-    private static JLabel totalLabel;
-
-    // --- A simple color scheme for a better look ---
-    private static final Color BG_COLOR = new Color(240, 245, 250); // Light blue-gray
-    private static final Color PANEL_COLOR = Color.WHITE;
-    private static final Color ACCENT_COLOR = new Color(70, 130, 180); // Steel Blue
-
-    /** Main entry point: sets up data and launches the GUI. */
     public static void main(String[] args) {
-        addSampleData();
         SwingUtilities.invokeLater(Main::createAndShowGui);
     }
 
-    /** Creates the main window and all its contents. */
+    /** Creates and displays the main application window. */
     private static void createAndShowGui() {
-        // --- Frame Setup ---
-        JFrame frame = new JFrame("Simple E-commerce Store");
+        JFrame frame = new JFrame("E-commerce Store");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout(10, 10));
-        frame.getContentPane().setBackground(BG_COLOR);
 
-        // --- Left Panel: Product List ---
-        productJList = new JList<>(productListModel);
-        JButton addToCartBtn = createStyledButton("Add to Cart");
-        addToCartBtn.addActionListener(_ -> addSelectedItemToCart());
-        JPanel productPanel = createTitledPanel("Available Products", new JScrollPane(productJList), addToCartBtn);
-        
-        // --- Right Panel: Shopping Cart ---
-        cartJList = new JList<>(cartListModel);
-        totalLabel = new JLabel("Total: $0.00");
-        totalLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
-        JButton removeBtn = createStyledButton("Remove Selected");
-        removeBtn.addActionListener(_ -> removeItemFromCart());
-        JButton clearBtn = createStyledButton("Clear Cart");
-        clearBtn.addActionListener(_ -> clearCart());
+        // --- Models & Tables ---
+        prodTblModel = new ProductTableModel(createSampleProducts());
+        JTable prodTbl = new JTable(prodTblModel);
+        prodTbl.setRowHeight(30);
+        new ButtonColumn(prodTbl, 4, row -> {
+            customer.addToCart(prodTblModel.getProductAt(row));
+            updateCart();
+            flashComponent(cartBtn, Color.ORANGE, 2);
+        });
 
-        JPanel cartButtonsPanel = new JPanel(new GridLayout(1, 2, 5, 0));
-        cartButtonsPanel.setOpaque(false);
-        cartButtonsPanel.add(removeBtn);
-        cartButtonsPanel.add(clearBtn);
+        cartTblModel = new CartTableModel();
+        JTable cartTbl = new JTable(cartTblModel);
+        cartTbl.setRowHeight(30);
+        new ButtonColumn(cartTbl, 3, row -> {
+            customer.removeFromCart(cartTblModel.getProductAt(row));
+            updateCart();
+        });
 
-        JPanel cartBottomPanel = new JPanel(new BorderLayout(5,5));
-        cartBottomPanel.setOpaque(false);
-        cartBottomPanel.add(cartButtonsPanel, BorderLayout.NORTH);
-        cartBottomPanel.add(totalLabel, BorderLayout.CENTER);
-        
-        JPanel cartPanel = createTitledPanel("Shopping Cart", new JScrollPane(cartJList), cartBottomPanel);
-        cartPanel.setPreferredSize(new Dimension(300, 400)); // Makes cart panel thinner
-        
-        // --- Bottom Panel: Place Order ---
-        JButton placeOrderBtn = createStyledButton("Place Order");
-        placeOrderBtn.setFont(new Font("SansSerif", Font.BOLD, 16));
-        placeOrderBtn.addActionListener(_ -> placeOrderFromCart());
-        JPanel orderPanel = new JPanel();
-        orderPanel.setBackground(BG_COLOR);
-        orderPanel.setBorder(new EmptyBorder(0, 10, 10, 10));
-        orderPanel.add(placeOrderBtn);
-        
-        // --- Assemble Frame ---
-        frame.add(productPanel, BorderLayout.CENTER);
+        // --- UI Panels ---
+        cartBtn = createButton("🛒 Cart", _ -> cartPanel.setVisible(!cartPanel.isVisible()));
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(new JLabel("Welcome!", JLabel.LEFT), BorderLayout.CENTER);
+        topPanel.add(cartBtn, BorderLayout.EAST);
+
+        JButton addSelBtn = createButton("Add Selected", _ -> {
+            prodTblModel.getSelectedProducts().forEach(customer::addToCart);
+            updateCart();
+            flashComponent(cartBtn, Color.ORANGE, 2);
+        });
+        JPanel prodPanel = new JPanel(new BorderLayout(5, 5));
+        prodPanel.add(new JScrollPane(prodTbl), BorderLayout.CENTER);
+        prodPanel.add(addSelBtn, BorderLayout.SOUTH);
+
+        totalLbl = new JLabel("Total: $0.00");
+        totalLbl.setFont(totalLbl.getFont().deriveFont(Font.BOLD, 16f));
+        JButton orderBtn = createButton("Place Order", _ -> placeOrder());
+        JPanel cartBottomPanel = new JPanel(new BorderLayout());
+        cartBottomPanel.add(totalLbl, BorderLayout.CENTER);
+        cartBottomPanel.add(orderBtn, BorderLayout.EAST);
+
+        cartPanel = new JPanel(new BorderLayout(5, 5));
+        cartPanel.setBorder(BorderFactory.createTitledBorder("Shopping Cart"));
+        cartPanel.add(new JScrollPane(cartTbl), BorderLayout.CENTER);
+        cartPanel.add(cartBottomPanel, BorderLayout.SOUTH);
+        cartPanel.setPreferredSize(new Dimension(400, 0));
+        cartPanel.setVisible(false);
+
+        // --- Frame Assembly ---
+        frame.add(topPanel, BorderLayout.NORTH);
+        frame.add(prodPanel, BorderLayout.CENTER);
         frame.add(cartPanel, BorderLayout.EAST);
-        frame.add(orderPanel, BorderLayout.SOUTH);
-
-        updateCartDisplay();
-        frame.pack();
+        frame.setSize(800, 600);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
-    /** Adds selected product to cart. */
-    private static void addSelectedItemToCart() {
-        Product selected = productJList.getSelectedValue();
-        if (selected != null) {
-            customer.addToCart(selected);
-            updateCartDisplay();
-        }
-    }
+    /** Handles the entire order placement process. */
+    private static void placeOrder() {
+        if (customer.getCart().isEmpty()) return;
+        String name = JOptionPane.showInputDialog(null, "Enter your name for the order:", "Checkout", JOptionPane.PLAIN_MESSAGE);
+        if (name == null || name.trim().isEmpty()) return;
 
-    /** Removes selected item from cart. */
-    private static void removeItemFromCart() {
-        Product selected = cartJList.getSelectedValue();
-        if (selected != null) {
-            customer.removeFromCart(selected);
-            updateCartDisplay();
-        }
-    }
-
-    /** Clears all items from the cart. */
-    private static void clearCart() {
-        if (!customer.getShoppingCart().isEmpty()) {
-            customer.clearCart();
-            updateCartDisplay();
-        }
-    }
-
-    /** Creates an order, shows summary in a popup, and clears cart. */
-    private static void placeOrderFromCart() {
-        List<Product> cartItems = customer.getShoppingCart();
-        if (cartItems.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Your shopping cart is empty.", "Empty Cart", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        Order order = new Order(customer, cartItems);
-        JOptionPane.showMessageDialog(null, order.generateSummary(), "Order Placed Successfully!", JOptionPane.INFORMATION_MESSAGE);
+        customer.setName(name);
+        Order order = new Order(customer, customer.getCart());
+        JOptionPane.showMessageDialog(null, order.getSummary(), "Order Placed!", JOptionPane.INFORMATION_MESSAGE);
         customer.clearCart();
-        updateCartDisplay();
+        updateCart();
     }
 
-    /** Refreshes the cart list and total price display. */
-    private static void updateCartDisplay() {
-        List<Product> cartItems = customer.getShoppingCart();
-        cartListModel.clear();
-        cartItems.forEach(cartListModel::addElement);
-        double total = cartItems.stream().mapToDouble(Product::getPrice).sum();
-        totalLabel.setText(String.format("Total: $%.2f", total));
-    }
-    
-    // --- Helper methods for UI consistency ---
-    
-    /** Helper to create a consistently styled JPanel. */
-    private static JPanel createTitledPanel(String title, JComponent main, JComponent bottom) {
-        JPanel panel = new JPanel(new BorderLayout(5, 5));
-        panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder(title), new EmptyBorder(5, 5, 5, 5)));
-        panel.setBackground(PANEL_COLOR);
-        panel.add(main, BorderLayout.CENTER);
-        panel.add(bottom, BorderLayout.SOUTH);
-        return panel;
+    /** Central method to refresh cart view, counter, and total. */
+    private static void updateCart() {
+        Map<Product, Integer> cartData = customer.getCart();
+        cartTblModel.updateCartData(cartData);
+        double total = cartData.entrySet().stream().mapToDouble(e -> e.getKey().getPrice() * e.getValue()).sum();
+        totalLbl.setText(String.format("Total: $%.2f", total));
+        int count = cartData.values().stream().mapToInt(Integer::intValue).sum();
+        cartBtn.setText(String.format("🛒 Cart (%d)", count));
     }
 
-    /** Helper to create a consistently styled JButton. */
-    private static JButton createStyledButton(String text) {
-        JButton button = new JButton(text);
-        button.setBackground(ACCENT_COLOR);
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setFont(new Font("SansSerif", Font.BOLD, 12));
-        return button;
+    /** UI factory for creating styled, animated buttons. */
+    private static JButton createButton(String text, ActionListener listener) {
+        JButton btn = new JButton(text);
+        Color defaultBg = new Color(70, 130, 180); // Steel Blue
+        btn.setBackground(defaultBg);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.addActionListener(listener);
+        btn.addMouseListener(new MouseAdapter() { // Simple press animation
+            public void mousePressed(MouseEvent e) { btn.setBackground(defaultBg.darker()); }
+            public void mouseReleased(MouseEvent e) { btn.setBackground(defaultBg); }
+        });
+        return btn;
     }
 
-    /** Populates product list with sample data. Comment out call in main() to disable. */
-    private static void addSampleData() {
-        productListModel.addElement(new Product("P001", "Laptop Pro", 1299.99));
-        productListModel.addElement(new Product("P002", "Wireless Mouse", 35.50));
-        productListModel.addElement(new Product("P003", "Mechanical Keyboard", 115.00));
-        productListModel.addElement(new Product("P004", "4K Monitor", 350.00));
-        productListModel.addElement(new Product("P005", "HD Webcam", 60.00));
+    /** Briefly flashes a component's background color as a visual cue. */
+    private static void flashComponent(JComponent comp, Color flashColor, int flashes) {
+        Color original = comp.getBackground();
+        Timer timer = new Timer(150, null);
+        timer.addActionListener(new ActionListener() {
+            private int count = 0;
+            public void actionPerformed(ActionEvent e) {
+                if (count >= flashes * 2) {
+                    comp.setBackground(original);
+                    timer.stop();
+                } else {
+                    comp.setBackground(count % 2 == 0 ? flashColor : original);
+                    count++;
+                }
+            }
+        });
+        timer.start();
+    }
+
+    private static List<Product> createSampleProducts() {
+        return List.of(new Product("P001","Laptop Pro","Electronics",1299.99), new Product("P002","Wireless Mouse","Electronics",35.50), new Product("P003","Java Mug","Kitchen",15.00), new Product("P004","4K Monitor","Electronics",350.00), new Product("P005","Ergo Chair","Office",275.00));
+    }
+}
+
+/** Manages product table data. */
+class ProductTableModel extends AbstractTableModel {
+    private static final long serialVersionUID = 1L;
+    private final List<Product> prods;
+    private final List<Boolean> checked;
+    private final String[] cols = {"Select", "Name", "Category", "Price", "Add"};
+
+    ProductTableModel(List<Product> prods) {
+        this.prods = prods;
+        checked = new ArrayList<>(prods.size());
+        prods.forEach(_ -> checked.add(false));
+    }
+
+    public int getRowCount() { return prods.size(); }
+    public int getColumnCount() { return cols.length; }
+    public String getColumnName(int c) { return cols[c]; }
+    public Class<?> getColumnClass(int c) { return c == 0 ? Boolean.class : c == 4 ? JButton.class : Object.class; }
+    public boolean isCellEditable(int r, int c) { return c == 0 || c == 4; }
+    public Product getProductAt(int r) { return prods.get(r); }
+    public List<Product> getSelectedProducts() {
+        List<Product> selected = new ArrayList<>();
+        for(int i = 0; i < prods.size(); i++) if(checked.get(i)) selected.add(prods.get(i));
+        return selected;
+    }
+    public Object getValueAt(int r, int c) {
+        Product p = prods.get(r);
+        return switch (c) {
+            case 0 -> checked.get(r);
+            case 1 -> p.getName();
+            case 2 -> p.getCategory();
+            case 3 -> String.format("$%.2f", p.getPrice());
+            case 4 -> "+";
+            default -> null;
+        };
+    }
+    public void setValueAt(Object val, int r, int c) {
+        if(c == 0) checked.set(r, (Boolean) val);
+    }
+}
+
+/** Manages shopping cart table data. */
+class CartTableModel extends AbstractTableModel {
+    private static final long serialVersionUID = 1L;
+    private List<Map.Entry<Product, Integer>> items = new ArrayList<>();
+    private final String[] cols = {"Item", "Price", "Qty", "Remove"};
+
+    public int getRowCount() { return items.size(); }
+    public int getColumnCount() { return cols.length; }
+    public String getColumnName(int c) { return cols[c]; }
+    public Class<?> getColumnClass(int c) { return c == 3 ? JButton.class : Object.class; }
+    public boolean isCellEditable(int r, int c) { return c == 3; }
+    public Product getProductAt(int r) { return items.get(r).getKey(); }
+
+    public Object getValueAt(int r, int c) {
+        Map.Entry<Product, Integer> item = items.get(r);
+        return switch (c) {
+            case 0 -> item.getKey().getName();
+            case 1 -> String.format("$%.2f", item.getKey().getPrice());
+            case 2 -> item.getValue();
+            case 3 -> "x";
+            default -> null;
+        };
+    }
+    public void updateCartData(Map<Product, Integer> cart) {
+        items = new ArrayList<>(cart.entrySet());
+        fireTableDataChanged();
+    }
+}
+
+/** Reusable component for adding a clickable button to a JTable column. */
+class ButtonColumn extends AbstractCellEditor implements TableCellRenderer, ActionListener, javax.swing.table.TableCellEditor {
+    private static final long serialVersionUID = 1L;
+    private final JButton renderBtn, editBtn;
+    private final RowAction action;
+    private int row;
+
+    interface RowAction { void onAction(int row); }
+
+    public ButtonColumn(JTable table, int col, RowAction action) {
+        this.action = action;
+        renderBtn = new JButton(); editBtn = new JButton();
+        editBtn.addActionListener(this);
+        table.getColumnModel().getColumn(col).setCellRenderer(this);
+        table.getColumnModel().getColumn(col).setCellEditor(this);
+    }
+
+    public Component getTableCellRendererComponent(JTable t, Object val, boolean sel, boolean foc, int r, int c) {
+        renderBtn.setText(val != null ? val.toString() : "");
+        return renderBtn;
+    }
+    public Component getTableCellEditorComponent(JTable t, Object val, boolean sel, int r, int c) {
+        editBtn.setText(val != null ? val.toString() : "");
+        row = r;
+        return editBtn;
+    }
+    public Object getCellEditorValue() { return editBtn.getText(); }
+    public void actionPerformed(ActionEvent e) {
+        fireEditingStopped();
+        action.onAction(row);
     }
 }
