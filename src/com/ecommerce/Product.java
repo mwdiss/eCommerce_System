@@ -1,9 +1,7 @@
 package com.ecommerce;
 
 /**
- * Represents a product with an ID, name, and price in the e-commerce system.
- * This class provides a simple structure for product data.
- *
+ * A simple class for a product. Holds its ID, name, and price.
  * @author Malith Dissanayake
  */
 public class Product {
@@ -12,11 +10,10 @@ public class Product {
     private final double price;
 
     /**
-     * Constructs a new Product with specified details.
-     *
-     * @param productID The unique identifier for the product.
-     * @param name The name of the product.
-     * @param price The price of the product.
+     * Creates a new product.
+     * @param productID The product's unique ID.
+     * @param name The product's name.
+     * @param price The product's price.
      */
     public Product(String productID, String name, double price) {
         this.productID = productID;
@@ -24,37 +21,14 @@ public class Product {
         this.price = price;
     }
 
-    /**
-     * Gets the product's unique ID.
-     *
-     * @return The product ID string.
-     */
-    public String getProductID() {
-        return productID;
-    }
+    // Standard getter methods.
+    public String getProductID() { return productID; }
+    public String getName() { return name; }
+    public double getPrice() { return price; }
 
     /**
-     * Gets the product's name.
-     *
-     * @return The product name string.
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Gets the product's price.
-     *
-     * @return The product price as a double.
-     */
-    public double getPrice() {
-        return price;
-    }
-
-    /**
-     * Returns a string representation of the product for display purposes.
-     *
-     * @return A formatted string with the product's name and price.
+     * Defines how the product is displayed in UI lists.
+     * @return A clean, formatted string like "Laptop Pro - $1299.99".
      */
     @Override
     public String toString() {

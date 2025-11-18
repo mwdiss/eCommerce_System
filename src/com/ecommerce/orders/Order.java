@@ -8,9 +8,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Represents a customer's order, containing order details like ID, products, and total cost.
- * The order is generated from the customer's shopping cart.
- *
+ * Represents a completed order. It captures a snapshot of the customer's cart.
  * @author Malith Dissanayake
  */
 public class Order {
@@ -20,11 +18,9 @@ public class Order {
     private final double orderTotal;
 
     /**
-     * Constructs a new Order from the customer and their list of products.
-     * A unique order ID is automatically generated.
-     *
+     * Creates an order from a customer and a list of products.
      * @param customer The customer placing the order.
-     * @param products The list of products included in the order.
+     * @param products The products they are buying.
      */
     public Order(Customer customer, List<Product> products) {
         this.orderID = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
@@ -34,16 +30,12 @@ public class Order {
     }
 
     /**
-     * Generates a concise summary of the order details.
-     *
-     * @return A formatted string containing the order ID, customer name, products, and total.
+     * Creates a neat, multi-line summary of the order.
+     * @return A formatted string with all order details.
      */
     public String generateSummary() {
-        String productDetails = products.stream()
-                .map(p -> "- " + p.toString())
-                .collect(Collectors.joining("\n"));
-
+        String productDetails = products.stream().map(p -> "- " + p.toString()).collect(Collectors.joining("\n"));
         return String.format("Order ID: %s\nCustomer: %s\n\nProducts:\n%s\n\nTotal: $%.2f",
-                orderID, customer.getCustomerID(), productDetails, orderTotal);
+                orderID, customer.getName(), productDetails, orderTotal);
     }
 }
