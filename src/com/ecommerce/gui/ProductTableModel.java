@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.swing.JButton;
 
-/** Data model for the main product table. */
+/** Data model for main product table */
 public class ProductTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = 1L;
 	private final List<Product> products;

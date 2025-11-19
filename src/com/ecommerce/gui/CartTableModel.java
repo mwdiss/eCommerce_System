@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JButton;
 
-/** Data model for the shopping cart table. */
+/** Data model for shopping cart table */
 public class CartTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = 1L;
 	private List<Map.Entry<Product, Integer>> items = new ArrayList<>();

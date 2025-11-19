@@ -6,10 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * A customer order with details and receipt generation.
- * @author Malith Dissanayake
- */
+/**Customer order details n receipt
+ * @author Malith Dissanayake */
 public class Order {
     private final String orderID = UUID.randomUUID().toString().toUpperCase().substring(0, 8);
     private final Customer customer;

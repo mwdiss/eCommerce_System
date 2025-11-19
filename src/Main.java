@@ -12,10 +12,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-/**
- * Main application window for a simple E-commerce system.
- * @author Malith Dissanayake
- */
+/**Main application window
+ * @author Malith Dissanayake */
 public class Main {
     private static final Customer customer = new Customer("Guest");
     private static final CartTableModel cartTableModel = new CartTableModel();
@@ -26,7 +24,7 @@ public class Main {
     public static void main(String[] args) { SwingUtilities.invokeLater(Main::createAndShowGui); }
 
     private static void createAndShowGui() {
-        JFrame frame = new JFrame("Taiga Store");
+        JFrame frame = new JFrame("Taiga - Clean us out!");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout(10, 10));
         ((JPanel) frame.getContentPane()).setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -52,7 +50,7 @@ public class Main {
         frame.setVisible(true);
     }
     
-    /** @return A fully assembled cart panel. */
+    /** @return cart panel */
     private static JPanel createCartPanel() {
         JTable cartTable = createTable(cartTableModel, new int[]{1,3}, new int[]{40,50});
         new ButtonColumn(cartTable, 3, row -> { customer.removeFromCart(cartTableModel.getProductAt(row)); updateUiStates(); });
@@ -70,7 +68,7 @@ public class Main {
         return cartPanel;
     }
 
-    /** @param model The table model. @param cols Column indices to resize. @param widths The column widths. */
+    /** @param model The table model. @param cols Column indices to resize. @param widths Column widths. */
     private static JTable createTable(AbstractTableModel model, int[] cols, int[] widths) {
         JTable table = new JTable(model);
         table.setRowHeight(30); table.setAutoCreateRowSorter(true);

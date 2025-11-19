@@ -1,7 +1,6 @@
 package com.ecommerce;
 
-/**
- * An immutable product with validation.
+/**Product with validation.
  * @param productID Unique ID, not blank.
  * @param prodName  Display name, not blank.
  * @param category  Product category.

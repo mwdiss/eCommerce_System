@@ -3,10 +3,8 @@ package com.ecommerce;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Represents a customer and their shopping cart.
- * @author Malith Dissanayake
- */
+/**Customer and cart
+ * @author Malith Dissanayake */
 public class Customer {
     private String custName;
     private final Map<Product, Integer> cart = new LinkedHashMap<>();
