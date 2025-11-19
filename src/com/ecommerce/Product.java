@@ -1,9 +1,19 @@
 package com.ecommerce;
 
-/**An immutable product with its details.
- * @param productID Unique product identifier.
- * @param prodName  Display name of the product.
+/**
+ * An immutable product with validation.
+ * @param productID Unique ID, not blank.
+ * @param prodName  Display name, not blank.
  * @param category  Product category.
- * @param price     Product price.
- * @author Malith Dissanayake */
-public record Product(String productID, String prodName, String category, double price) {}
+ * @param price     Price, must be non-negative.
+ * @author Malith Dissanayake
+ */
+public record Product(String productID, String prodName, String category, double price) {
+    /** Validates product data upon creation. */
+    public Product {
+        if (productID == null || productID.isBlank()) throw new IllegalArgumentException("Product ID cannot be empty.");
+        if (prodName == null || prodName.isBlank()) throw new IllegalArgumentException("Product name cannot be empty.");
+        if (price < 0) throw new IllegalArgumentException("Price cannot be negative.");
+        category = (category == null || category.isBlank()) ? "General" : category;
+    }
+}
