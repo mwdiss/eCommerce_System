@@ -22,7 +22,7 @@ public class CartTableModel extends AbstractTableModel {
 
     @Override public Object getValueAt(int r, int c) {
         Product p = items.get(r).getKey(); int qty = items.get(r).getValue();
-        return switch(c){case 0->p.prodName();case 1->qty;case 2->String.format("$%.2f", p.price()*qty);case 3->"❌";default->null;};
+        return switch(c){case 0->p.name();case 1->qty;case 2->String.format("$%.2f", p.price()*qty);case 3->"❌";default->null;};
     }
     /** @param cart Updates the table with new cart data. */
     public void updateCartData(Map<Product, Integer> cart) { items = new ArrayList<>(cart.entrySet()); fireTableDataChanged(); }

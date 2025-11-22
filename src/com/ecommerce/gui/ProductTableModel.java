@@ -28,7 +28,7 @@ public class ProductTableModel extends AbstractTableModel {
     public List<Product> getSelectedProducts() { return IntStream.range(0,products.size()).filter(checked::get).mapToObj(products::get).collect(Collectors.toList()); }
     @Override public Object getValueAt(int r, int c) {
         Product p = products.get(r);
-        return switch(c){case 0->checked.get(r);case 1->p.prodName();case 2->p.category();case 3->String.format("$%.2f",p.price());case 4->"➕";default->null;};
+        return switch(c){case 0->checked.get(r);case 1->p.name();case 2->p.category();case 3->String.format("$%.2f",p.price());case 4->"➕";default->null;};
     }
     @Override public void setValueAt(Object val, int r, int c) { if(c==0){checked.set(r,(Boolean)val);fireTableCellUpdated(r,c);} }
 }

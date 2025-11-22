@@ -28,7 +28,7 @@ public class Order {
     /** Generates a formatted receipt string for the order. */
     public String getReceipt() {
         String items = products.entrySet().stream()
-            .map(e -> String.format("%-20s %7.2f %3d %7.2f", e.getKey().prodName(), e.getKey().price(), e.getValue(), e.getKey().price() * e.getValue()))
+            .map(e -> String.format("%-20s %7.2f %3d %7.2f", e.getKey().name(), e.getKey().price(), e.getValue(), e.getKey().price() * e.getValue()))
             .collect(Collectors.joining("\n"));
         return """
             --- Taiga ---

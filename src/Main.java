@@ -2,10 +2,10 @@ import com.ecommerce.Customer;
 import com.ecommerce.Product;
 import com.ecommerce.gui.*;
 import com.ecommerce.orders.Order;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.*;
-import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
@@ -78,13 +78,11 @@ public class Main {
 
     private static void placeOrder() {
         JTextField nameField = new JTextField();
-        ((AbstractDocument)nameField.getDocument()).setDocumentFilter(new DocumentFilter(){
-            public void replace(FilterBypass fb,int o,int l,String t,AttributeSet a)throws BadLocationException{if((fb.getDocument().getLength()+t.length()-l)<=30)super.replace(fb,o,l,t,a);}
-        });
-        do { if (JOptionPane.showConfirmDialog(null,new Object[]{"Enter name:",nameField},"Checkout",JOptionPane.OK_CANCEL_OPTION)!=0) return; }
-        while (nameField.getText().trim().isEmpty());
-
-        Order order = new Order(customer, customer.getCart());
+        while (true) { /** loop untill valid user input */
+            if (JOptionPane.showConfirmDialog(null, new Object[]{"Enter name (2-30 letters/spaces):", nameField}, "Checkout", JOptionPane.OK_CANCEL_OPTION) != 0) return;
+            if (nameField.getText().trim().matches("^[a-zA-Z ]{2,30}$")) { customer.setCustName(nameField.getText().trim()); break; }
+        }
+        Order order = customer.placeOrder(); //order
         System.out.println(getConsoleOrderSummary(order));
 
         JTextArea receipt = new JTextArea(order.getReceipt(), 20, 41);
@@ -98,7 +96,7 @@ public class Main {
     
     private static void updateUiStates() {
         cartTableModel.updateCartData(customer.getCart());
-        double total = customer.getCart().entrySet().stream().mapToDouble(e -> e.getKey().price() * e.getValue()).sum();
+        double total = customer.calculateTotal(); //get total
         totalLabel.setText(String.format("Total: $%.2f", total));
         cartButton.setText(String.format("🛒 Cart (%d)", customer.getCart().values().stream().mapToInt(Integer::intValue).sum()));
         boolean isEmpty = customer.getCart().isEmpty();
@@ -118,8 +116,8 @@ public class Main {
     
     /** @param order The order to summarize. */
     private static String getConsoleOrderSummary(Order order) {
-        String items = order.getProducts().entrySet().stream().map(e -> String.format("  - %s(x%d)",e.getKey().prodName(),e.getValue())).collect(Collectors.joining("\n"));
-        return "\n--- ORDER [%s] ---\nCUST: %s\nTOTAL: $%.2f\nITEMS:\n%s\n--- END ---".formatted(order.getOrderID(), order.getCustomer().getCustName(), order.getTotal(), items);
+    	String items = order.getProducts().entrySet().stream() .map(e -> String.format("  - %s(x%d)", e.getKey().name(), e.getValue())) .collect(Collectors.joining("\n"));
+        return "\n--- ORDER [%s] ---\nCUST ID: %s \nCUST Name: %s \n\nTOTAL: $%.2f\nITEMS:\n%s\n--- END ---".formatted(order.getOrderID(), order.getCustomer().getCustomerID(), order.getCustomer().getCustName(), order.getTotal(), items);
     }
     
     private static List<Product> createSampleProducts() {
