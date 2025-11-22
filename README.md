@@ -27,7 +27,7 @@ A lightweight, console-based application demonstrating the core logic of a simpl
 
 1.  **Clone the repository:**
     ```sh
-    git clone <your-repository-url>
+    git clone https://github.com/mwdiss/eCommerce_System.git
     ```
 
 2.  **Navigate to the source directory:**
